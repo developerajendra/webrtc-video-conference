@@ -6,7 +6,7 @@ const port = process.env.PORT || 3000;
 
 let io = require('socket.io')(http);
 
-app.use(express.static('public'))
+// app.use(express.static('public'))
 
 http.listen(port, ()=>{
     console.log('listening on ', port);  
