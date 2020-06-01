@@ -5,7 +5,7 @@ let http = require('http').Server(app);
 const port = process.env.PORT || 3000;
 
 let io = require('socket.io')(http);
-
+io.origins('*:*') 
 // app.use(express.static('public'))
 
 http.listen(port, ()=>{
