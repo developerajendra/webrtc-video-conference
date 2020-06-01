@@ -35,7 +35,7 @@ btnGoRoom.onclick = ()=>{
     }
 
     roomNumber = inputRoomNumber.value;
-    socket.emit('create or join', roomNumber);
+    socket.emit('joinTheRoom', roomNumber);
     divSelectRoom.style = 'display:none';
     divConsultingRoom.style = 'display:block';
 }
@@ -79,15 +79,15 @@ socket.on('ready', ()=>{
         // rtcPeerConnection.addTrack(localStream.getTracks()[1], localStream);
         rtcPeerConnection.createOffer()
         .then(sessionDescription=>{
-            rtcPeerConnection.setLocalDescription(sessionDescription);
-            console.log('sending offer', sessionDescription);
-            
-            socket.emit('offer',{
-                type:'offer',
-                sdp: sessionDescription,
-                room: roomNumber
+            rtcPeerConnection.setLocalDescription(sessionDescription).
+            then(()=>{
+                console.log('sending offer', sessionDescription);
+                socket.emit('offer',{
+                    type:'offer',
+                    sdp: sessionDescription,
+                    room: roomNumber
+                });
             });
-            
         })
         .catch(error=>{
             console.log(error);
@@ -109,8 +109,9 @@ socket.on('offer', (event)=>{
         rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(event))
         rtcPeerConnection.createAnswer()
         .then(sessionDescription=>{
-            rtcPeerConnection.setLocalDescription(sessionDescription);
             console.log('sending the answer',sessionDescription);
+            rtcPeerConnection.setLocalDescription(sessionDescription);
+           
             
             socket.emit('answer',{
                 type:'answer',
@@ -128,7 +129,6 @@ socket.on('offer', (event)=>{
 
 socket.on('answer', event=>{
     console.log('reccived answer', event);
-    
     rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(event));
 });
 
@@ -142,6 +142,8 @@ function onAddStream(event){
 
 
 function onIceCandidate(event){
+    console.log('ice candidate');
+    
     if(event.candidate){
         console.log('sending ice candidate', event.candidate);
         
@@ -158,7 +160,8 @@ function onIceCandidate(event){
 
 
 socket.on('candidate', event=>{
-    debugger
+    console.log('candidate');
+    
     const candidate = new RTCIceCandidate({
         sdpMLineIndex: event.label,
         candidate:event.candidate
